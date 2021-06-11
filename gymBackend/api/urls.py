@@ -11,5 +11,7 @@ urlpatterns = [
     path('buy_vipcard', views.buy_vipcard),
     path('show_all_class', views.show_all_class),
     path('technician_login', views.technician_login),
+    path('create_Equipment',views.create_Equipment),
+    path('create_Maintainsce', views.create_maintaince),
 
 ]

@@ -115,7 +115,7 @@ class Equipment(models.Model):
     equipdata = models.BinaryField(db_column='EquipData', blank=True, null=True)  # Field name made lowercase.
     equipextn = models.CharField(db_column='Equipextn', max_length=10, blank=True,
                                  null=True)  # Field name made lowercase.
-    purchasedtime = models.DateField(db_column='purchasedTime', blank=True, null=True)  # Field name made lowercase.
+    purchasedtime = models.DateField(db_column='purchasedTime', blank=True, null=True,default=now)  # Field name made lowercase.
     lastfix = models.CharField(db_column='lastFix', max_length=10, blank=True, null=True)  # Field name made lowercase.
     price = models.DecimalField(max_digits=19, decimal_places=4, blank=True, null=True)
 
@@ -126,7 +126,7 @@ class Equipment(models.Model):
 
 class Maintenance(models.Model):
     id = models.BigAutoField(db_column='ID', primary_key=True)  # Field name made lowercase.
-    fixday = models.DateField(db_column='fixDay', blank=True, null=True)  # Field name made lowercase.
+    fixday = models.DateField(db_column='fixDay', blank=True, null=True,default=now)  # Field name made lowercase.
     equipid = models.ForeignKey(Equipment, models.DO_NOTHING, db_column='equipID', blank=True,
                                 null=True)  # Field name made lowercase.
     repairman = models.ForeignKey(Technician, models.DO_NOTHING, db_column='repairman', blank=True, null=True)

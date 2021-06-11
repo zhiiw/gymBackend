@@ -98,8 +98,8 @@ def get_all_technician(request):
         dic['message'] = "Wrong Method"
         return HttpResponse(json.dumps(dic))
 
-
     technicians = Technician.objects.all()
+
     arr=[]
     for technician in technicians:
         dic = {}
@@ -293,5 +293,67 @@ def show_all_class(request):
     dic['status'] = "Failed"
     dic['coach_list']=arr
     return HttpResponse(json.dumps(dic))
+
+def create_Equipment(request):
+    dic = {}
+    if request.method == 'GET':
+        dic['status'] = "Failed"
+        dic['message'] = "Wrong Method"
+        return HttpResponse(json.dumps(dic))
+    try:
+        post_content = json.loads(request.body)
+        username = post_content['equipname']
+        equipdata = post_content['equipdata']
+        price = float(post_content['price'])
+        lastfix = post_content['lastfix']
+        equipment = Equipment.objects.get(customername=username)
+    except (KeyError, json.decoder.JSONDecodeError):
+        dic['status'] = "Failed"
+        dic['message'] = "No Input"
+        return HttpResponse(json.dumps(dic))
+    except Equipment.DoesNotExist:
+        dic['status'] = "Success"
+        now = datetime.datetime.now()
+        custom = Equipment(equipname=username, equipdata=equipdata, price=price,
+                          lastfix=lastfix)
+        custom.save()
+        return HttpResponse(json.dumps(dic))
+    if equipment is not None:
+        dic['status'] = "Failed"
+        dic['message'] = "User exist"
+        return HttpResponse(json.dumps(dic))
+
+
+def create_maintaince(request):
+    dic = {}
+    if request.method == 'GET':
+        dic['status'] = "Failed"
+        dic['message'] = "Wrong Method"
+        return HttpResponse(json.dumps(dic))
+    try:
+        post_content = json.loads(request.body)
+        technician_id = post_content['technician_id']
+        equipid = post_content['equipid']
+        lastfix = post_content['lastfix']
+        equipment = Equipment.objects.get(id=equipid)
+        technician = Technician.objects.get(id=technician_id)
+
+    except (KeyError, json.decoder.JSONDecodeError):
+        dic['status'] = "Failed"
+        dic['message'] = "No Input"
+        return HttpResponse(json.dumps(dic))
+    except Equipment.DoesNotExist:
+        dic['status'] = "Failed"
+        dic['message'] = "The equipment doesn't exist"
+        return HttpResponse(json.dumps(dic))
+    except Technician.DoesNotExist:
+        dic['status'] = "Failed"
+        dic['message'] = "The technician doesn't exist"
+        return HttpResponse(json.dumps(dic))
+
+    if equipment is not None:
+        dic['status'] = "Failed"
+        dic['message'] = "equipment exist"
+        return HttpResponse(json.dumps(dic))
 
 
