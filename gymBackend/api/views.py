@@ -351,6 +351,7 @@ def create_maintaince(request):
         dic['message'] = "The technician doesn't exist"
         return HttpResponse(json.dumps(dic))
 
+
     if equipment is not None:
         dic['status'] = "Failed"
         dic['message'] = "equipment exist"
