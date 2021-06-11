@@ -98,6 +98,7 @@ def get_all_technician(request):
         dic['message'] = "Wrong Method"
         return HttpResponse(json.dumps(dic))
 
+
     technicians = Technician.objects.all()
     arr=[]
     for technician in technicians:
