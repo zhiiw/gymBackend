@@ -13,5 +13,7 @@ urlpatterns = [
     path('technician_login', views.technician_login),
     path('create_Equipment',views.create_Equipment),
     path('create_Maintainsce', views.create_maintaince),
+    path('delete_equipment', views.delete_equipment),
+    path('delete_student', views.delete_student),
 
 ]

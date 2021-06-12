@@ -25,8 +25,8 @@ def buy_vipcard(request):
         customer_id = int(post_content['customer_id'])
         deposit = float(post_content['deposit'])
         dic['status'] = "Success"
-        customer =Customer.objects.get(id=customer_id)
-        customer.membership="0"
+        customer = Customer.objects.get(id=customer_id)
+        customer.membership = "0"
 
         user = Vipcard.objects.get(customerid=customer)
     except (KeyError, json.decoder.JSONDecodeError):
@@ -64,59 +64,59 @@ def buy_class(request):
         dic['message'] = "No Input"
         return HttpResponse(json.dumps(dic))
 
+
 @csrf_exempt
 def get_all_coach(request):
     if request.method != 'GET':
-        dic={}
+        dic = {}
         dic['status'] = "Failed"
         dic['message'] = "Wrong Method"
         return HttpResponse(json.dumps(dic))
 
     coachs = Coach.objects.all()
-    arr=[]
+    arr = []
     for coach in coachs:
         dic = {}
         dic['coach_name'] = coach.coachname
         dic['coach_id'] = coach.id
-        dic['contactnum']=coach.contactnum
-        dic['address']=coach.address
-        dic['speciality']=coach.speciality
-        dic['salary']=coach.salary
+        dic['contactnum'] = coach.contactnum
+        dic['address'] = coach.address
+        dic['speciality'] = coach.speciality
+        dic['salary'] = coach.salary
 
         arr.append(dic)
 
-    dict={}
-    dict['status']="Success"
-    dict['couchs']=arr
+    dict = {}
+    dict['status'] = "Success"
+    dict['couchs'] = arr
     return HttpResponse(json.dumps(dict))
+
 
 @csrf_exempt
 def get_all_technician(request):
     if request.method != 'GET':
-        dic={}
+        dic = {}
         dic['status'] = "Failed"
         dic['message'] = "Wrong Method"
         return HttpResponse(json.dumps(dic))
 
     technicians = Technician.objects.all()
 
-    arr=[]
+    arr = []
     for technician in technicians:
         dic = {}
-        dic['name'] =technician.name
+        dic['name'] = technician.name
         dic['id'] = technician.id
         dic['contactnum'] = technician.contactnum
         dic['taddress'] = technician.taddress
         dic['salary'] = technician.salary
 
-
         arr.append(dic)
 
-    dict={}
-    dict['status']="Success"
-    dict['couchs']=arr
+    dict = {}
+    dict['status'] = "Success"
+    dict['couchs'] = arr
     return HttpResponse(json.dumps(dict))
-
 
 
 @csrf_exempt
@@ -174,6 +174,7 @@ def Manager_login(request):
         dic['user_id'] = user.id
         return HttpResponse(json.dumps(dic))
 
+
 @csrf_exempt
 def technician_login(request):
     dic = {}
@@ -205,7 +206,6 @@ def technician_login(request):
         dic['status'] = "Success"
         dic['user_id'] = user.id
         return HttpResponse(json.dumps(dic))
-
 
 
 @csrf_exempt
@@ -281,18 +281,19 @@ def show_all_class(request):
         return HttpResponse(json.dumps(dic))
 
     classes = Class.objects.all()
-    arr =  []
-    for ee in classes :
-        dic={}
-        dic["fee"]=ee.fee
-        dic["coach"]=ee.coach
-        dic["classtype"]=ee.classtype
+    arr = []
+    for ee in classes:
+        dic = {}
+        dic["fee"] = ee.fee
+        dic["coach"] = ee.coach
+        dic["classtype"] = ee.classtype
         arr.append(dic)
 
     dic = {}
     dic['status'] = "Failed"
-    dic['coach_list']=arr
+    dic['coach_list'] = arr
     return HttpResponse(json.dumps(dic))
+
 
 def create_Equipment(request):
     dic = {}
@@ -315,7 +316,7 @@ def create_Equipment(request):
         dic['status'] = "Success"
         now = datetime.datetime.now()
         custom = Equipment(equipname=username, equipdata=equipdata, price=price,
-                          lastfix=lastfix)
+                           lastfix=lastfix)
         custom.save()
         return HttpResponse(json.dumps(dic))
     if equipment is not None:
@@ -351,10 +352,65 @@ def create_maintaince(request):
         dic['message'] = "The technician doesn't exist"
         return HttpResponse(json.dumps(dic))
 
-
     if equipment is not None:
         dic['status'] = "Failed"
         dic['message'] = "equipment exist"
         return HttpResponse(json.dumps(dic))
 
 
+def delete_student(request):
+    dic = {}
+    if request.method == 'GET':
+        dic['status'] = "Failed"
+        dic['message'] = "Wrong Method"
+        return HttpResponse(json.dumps(dic))
+    try:
+        post_content = json.loads(request.body)
+        student_id = post_content['student_id']
+        stduent = Student.objects.get(id=student_id)
+        stduent.delete()
+        dic['status'] = "Success"
+        dic['message'] = "Student delete sucess"
+        return HttpResponse(json.dumps(dic))
+    except Student.DoesNotExist:
+        dic['status'] = "Failed"
+        dic['message'] = "The technician doesn't exist"
+        return HttpResponse(json.dumps(dic))
+
+
+def delete_equipment(request):
+    dic = {}
+    if request.method == 'GET':
+        dic['status'] = "Failed"
+        dic['message'] = "Wrong Method"
+        return HttpResponse(json.dumps(dic))
+    try:
+        post_content = json.loads(request.body)
+        student_id = post_content['equipment_id']
+        stduent = Equipment.objects.get(id=student_id)
+        stduent.delete()
+        dic['status'] = "Success"
+        dic['message'] = "Equipment delete sucess"
+        return HttpResponse(json.dumps(dic))
+    except Student.DoesNotExist:
+        dic['status'] = "Failed"
+        dic['message'] = "The technician doesn't exist"
+        return HttpResponse(json.dumps(dic))
+
+
+def student_get_class(request):
+    dic = {}
+    if request.method == 'GET':
+        dic['status'] = "Failed"
+        dic['message'] = "Wrong Method"
+        return HttpResponse(json.dumps(dic))
+
+    try:
+        post_content = json.loads(request.body)
+        student_id = post_content['equipment_id']
+        stduent = Equipment.objects.get(id=student_id)
+        stduent.delete()
+        dic['status'] = "Success"
+        dic['message'] = "Equipment delete sucess"
+        return HttpResponse(json.dumps(dic))
+    except Student.DoesNotExist:
