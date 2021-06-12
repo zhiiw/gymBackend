@@ -392,7 +392,7 @@ def delete_equipment(request):
         dic['status'] = "Success"
         dic['message'] = "Equipment delete sucess"
         return HttpResponse(json.dumps(dic))
-    except Student.DoesNotExist:
+    except Equipment.DoesNotExist:
         dic['status'] = "Failed"
         dic['message'] = "The technician doesn't exist"
         return HttpResponse(json.dumps(dic))
@@ -408,9 +408,21 @@ def student_get_class(request):
     try:
         post_content = json.loads(request.body)
         student_id = post_content['equipment_id']
-        stduent = Equipment.objects.get(id=student_id)
-        stduent.delete()
+        classes_id = post_content['class_id']
+        coach_id = post_content['coach_id']
+        student_id = post_content['student_id']
+
+        coach = Coach.objects.get(id=coach_id)
+
+        aclass = Classhistory(classid=classes_id,stduentid=student_id,coachid=coach)
         dic['status'] = "Success"
         dic['message'] = "Equipment delete sucess"
         return HttpResponse(json.dumps(dic))
     except Student.DoesNotExist:
+        dic['status'] = "Failed"
+        dic['message'] = "The student doesn,t exist."
+        return HttpResponse(json.dumps(dic))
+    except Class.DoesNotExist:
+        dic['status'] = "Failed"
+        dic['message'] = "The class doesn,t exist."
+        return HttpResponse(json.dumps(dic))

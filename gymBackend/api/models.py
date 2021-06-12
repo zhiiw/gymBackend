@@ -63,7 +63,7 @@ class Classhistory(models.Model):
                                 primary_key=True)  # Field name made lowercase.
     studentid = models.BigIntegerField(db_column='studentID')  # Field name made lowercase.
     classid = models.BigIntegerField(db_column='classID')  # Field name made lowercase.
-    classtime = models.DateField(blank=True, null=True)
+    classtime = models.DateField(blank=True, null=True,default=now)
 
     class Meta:
         managed = False
