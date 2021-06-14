@@ -41,6 +41,25 @@ def buy_vipcard(request):
 
 
 @csrf_exempt
+def total_login(request):
+    dic = {}
+    if request.method == 'GET':
+        dic['status'] = "Failed"
+        dic['message'] = "Wrong Method"
+        return HttpResponse(json.dumps(dic))
+
+    post_content = json.loads(request.body)
+    usertype = post_content['usertype']
+    if usertype == "Student":
+        return login(request)
+    if usertype == "Manager":
+        return Manager_login(request)
+
+    if usertype == "Technician":
+        return technician_login(request)
+
+
+@csrf_exempt
 def buy_class(request):
     dic = {}
     if request.method == 'GET':
@@ -52,11 +71,15 @@ def buy_class(request):
         print("ee")
         print(request.body)
         post_content = json.loads(request.body)
-        classtype = post_content['classtype']
-        coach = post_content['coach']
-        fee = int(post_content['fee'])
+        classid = post_content['class_id']
+        customer_id = int(post_content['customer_id'])
+        coach_id = int(post_content['coach_id'])
+
         dic['status'] = "Success"
-        custom = Class(coach=coach, fee=fee, classtype=classtype)
+        coach = Coach.objects.get(id=coach_id)
+        classes = Class.objects.get(id=classid)
+
+        custom = Student(classid=classes, coach=coach, classleft=customer_id)
         custom.save()
         return HttpResponse(json.dumps(dic))
     except (KeyError, json.decoder.JSONDecodeError):
@@ -82,13 +105,13 @@ def get_all_coach(request):
         dic['contactnum'] = coach.contactnum
         dic['address'] = coach.address
         dic['speciality'] = coach.speciality
-        dic['salary'] = coach.salary
+        dic['salary'] = float(coach.salary)
 
         arr.append(dic)
 
     dict = {}
     dict['status'] = "Success"
-    dict['couchs'] = arr
+    dict['coach_list'] = arr
     return HttpResponse(json.dumps(dict))
 
 
@@ -109,7 +132,7 @@ def get_all_technician(request):
         dic['id'] = technician.id
         dic['contactnum'] = technician.contactnum
         dic['taddress'] = technician.taddress
-        dic['salary'] = technician.salary
+        dic['salary'] = float(technician.salary)
 
         arr.append(dic)
 
@@ -129,7 +152,7 @@ def create_class(request):
 
     try:
         post_content = json.loads(request.body)
-        classtype = post_content['classtype']
+        classtype = post_content['class_type']
         coach = post_content['coach']
         fee = int(post_content['fee'])
         dic['status'] = "Success"
@@ -152,7 +175,7 @@ def Manager_login(request):
 
     try:
         post_content = json.loads(request.body)
-        username = post_content['managername']
+        username = post_content['username']
         password = post_content['password']
         user = Manager.objects.get(managername=username)
     except (KeyError, json.decoder.JSONDecodeError):
@@ -254,7 +277,6 @@ def register(request):
         password = post_content['password']
         gender = post_content['gender']
         contactnum = post_content['contact_number']
-        membership = post_content['membership']
         user = Customer.objects.get(customername=username)
     except (KeyError, json.decoder.JSONDecodeError):
         dic['status'] = "Failed"
@@ -273,6 +295,7 @@ def register(request):
         return HttpResponse(json.dumps(dic))
 
 
+@csrf_exempt
 def show_all_class(request):
     if request.method != 'GET':
         dic = {}
@@ -284,17 +307,19 @@ def show_all_class(request):
     arr = []
     for ee in classes:
         dic = {}
-        dic["fee"] = ee.fee
+        dic["class_id"] = ee.id
+        dic["fee"] = float(ee.fee)
         dic["coach"] = ee.coach
         dic["classtype"] = ee.classtype
         arr.append(dic)
 
     dic = {}
-    dic['status'] = "Failed"
-    dic['coach_list'] = arr
+    dic['status'] = "Success"
+    dic['class_list'] = arr
     return HttpResponse(json.dumps(dic))
 
 
+@csrf_exempt
 def create_Equipment(request):
     dic = {}
     if request.method == 'GET':
@@ -325,6 +350,7 @@ def create_Equipment(request):
         return HttpResponse(json.dumps(dic))
 
 
+@csrf_exempt
 def create_maintaince(request):
     dic = {}
     if request.method == 'GET':
@@ -358,6 +384,7 @@ def create_maintaince(request):
         return HttpResponse(json.dumps(dic))
 
 
+@csrf_exempt
 def delete_student(request):
     dic = {}
     if request.method == 'GET':
@@ -378,6 +405,28 @@ def delete_student(request):
         return HttpResponse(json.dumps(dic))
 
 
+@csrf_exempt
+def delete_class(request):
+    dic = {}
+    if request.method == 'GET':
+        dic['status'] = "Failed"
+        dic['message'] = "Wrong Method"
+        return HttpResponse(json.dumps(dic))
+    try:
+        post_content = json.loads(request.body)
+        student_id = post_content['class_id']
+        stduent = Class.objects.get(id=student_id)
+        stduent.delete()
+        dic['status'] = "Success"
+        dic['message'] = "Class delete sucess"
+        return HttpResponse(json.dumps(dic))
+    except Student.DoesNotExist:
+        dic['status'] = "Failed"
+        dic['message'] = "The Class doesn't exist"
+        return HttpResponse(json.dumps(dic))
+
+
+@csrf_exempt
 def delete_equipment(request):
     dic = {}
     if request.method == 'GET':
@@ -398,6 +447,32 @@ def delete_equipment(request):
         return HttpResponse(json.dumps(dic))
 
 
+@csrf_exempt
+def customer_class(request):
+    if request.method != 'POST':
+        dic = {}
+        dic['status'] = "Failed"
+        dic['message'] = "Wrong Method"
+        return HttpResponse(json.dumps(dic))
+    post_content = json.loads(request.body)
+    student_id = post_content['customer_id']
+    stduents = Student.objects.filter(id=student_id)
+    arr = []
+    for student in stduents:
+        dic = {}
+        dic["class_id"] = student.classid.id
+        dic["fee"] = float(student.classid.fee)
+        dic["coach"] = student.classid.coach
+        dic["classtype"] = student.classid.classtype
+        arr.append(dic)
+
+    dict = {}
+    dict['status'] = "Success"
+    dict['class_list'] = arr
+    return HttpResponse(json.dumps(dict))
+
+
+@csrf_exempt
 def student_get_class(request):
     dic = {}
     if request.method == 'GET':
@@ -414,7 +489,7 @@ def student_get_class(request):
 
         coach = Coach.objects.get(id=coach_id)
 
-        aclass = Classhistory(classid=classes_id,stduentid=student_id,coachid=coach)
+        aclass = Classhistory(classid=classes_id, stduentid=student_id, coachid=coach)
         dic['status'] = "Success"
         dic['message'] = "Equipment delete sucess"
         return HttpResponse(json.dumps(dic))

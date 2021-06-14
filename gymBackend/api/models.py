@@ -160,13 +160,13 @@ class Manager(models.Model):
 
 class Student(models.Model):
     id = models.BigAutoField(db_column='ID', primary_key=True)  # Field name made lowercase.
-    contactnum = models.BigIntegerField(db_column='contactNum', blank=True, null=True)  # Field name made lowercase.
+    contactnum = models.BigIntegerField(default=0,db_column='contactNum', blank=True, null=True)  # Field name made lowercase.
     classid = models.ForeignKey(Class, models.DO_NOTHING, db_column='classID')  # Field name made lowercase.
     classtime = models.CharField(db_column='classTime', max_length=10, blank=True,
-                                 null=True)  # Field name made lowercase.
+                                 null=True,default='0')  # Field name made lowercase.
     classstart = models.DateTimeField(db_column='classStart', blank=True, null=True,
                                       default=now)  # Field name made lowercase.
-    classleft = models.IntegerField(db_column='classLeft', blank=True, null=True)  # Field name made lowercase.
+    classleft = models.IntegerField(db_column='classLeft', blank=True, null=True)  # hack
     coach = models.ForeignKey(Coach, models.DO_NOTHING, db_column='coach', blank=True, null=True)
 
     class Meta:
