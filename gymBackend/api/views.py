@@ -73,13 +73,19 @@ def buy_class(request):
         post_content = json.loads(request.body)
         classid = post_content['class_id']
         customer_id = int(post_content['customer_id'])
-        coach_id = int(post_content['coach_id'])
 
         dic['status'] = "Success"
-        coach = Coach.objects.get(id=coach_id)
         classes = Class.objects.get(id=classid)
+        students=Student.objects.filter(classid=classes)
+        for student in students:
+            if student.contactnum==classid:
+                dic['status'] = "Failed"
+                dic['message'] = "Class exists"
+                return HttpResponse(json.dumps(dic))
+        name=classes.coach
+        coach = Coach.objects.get(coachname=name)
 
-        custom = Student(classid=classes, coach=coach, classleft=customer_id)
+        custom = Student(classid=classes, coach=coach, contactnum=customer_id)
         custom.save()
         return HttpResponse(json.dumps(dic))
     except (KeyError, json.decoder.JSONDecodeError):
@@ -320,6 +326,34 @@ def show_all_class(request):
 
 
 @csrf_exempt
+def show_all_equipment(request):
+    if request.method != 'GET':
+        dic = {}
+        dic['status'] = "Failed"
+        dic['message'] = "Wrong Method"
+        return HttpResponse(json.dumps(dic))
+
+    classes = Equipment.objects.all()
+    arr = []
+    for ee in classes:
+        dic = {}
+        dic["equipment_id"] = ee.id
+        dic["equipname"] = ee.equipname
+        dic["equipextn"] = ee.equipextn
+        dic["equipdata"] = ee.equipdata
+        dic["price"]=float(ee.price)
+        dic["equipdata"] = ee.equipdata
+
+        arr.append(dic)
+
+    dic = {}
+    dic['status'] = "Success"
+    dic['equipment_list'] = arr
+    return HttpResponse(json.dumps(dic))
+
+
+
+@csrf_exempt
 def create_Equipment(request):
     dic = {}
     if request.method == 'GET':
@@ -456,7 +490,7 @@ def customer_class(request):
         return HttpResponse(json.dumps(dic))
     post_content = json.loads(request.body)
     student_id = post_content['customer_id']
-    stduents = Student.objects.filter(id=student_id)
+    stduents = Student.objects.filter(contactnum=student_id)
     arr = []
     for student in stduents:
         dic = {}
@@ -490,8 +524,9 @@ def student_get_class(request):
         coach = Coach.objects.get(id=coach_id)
 
         aclass = Classhistory(classid=classes_id, stduentid=student_id, coachid=coach)
+        aclass.save()
         dic['status'] = "Success"
-        dic['message'] = "Equipment delete sucess"
+        dic['message'] = "Create success"
         return HttpResponse(json.dumps(dic))
     except Student.DoesNotExist:
         dic['status'] = "Failed"
@@ -501,3 +536,6 @@ def student_get_class(request):
         dic['status'] = "Failed"
         dic['message'] = "The class doesn,t exist."
         return HttpResponse(json.dumps(dic))
+
+
+
