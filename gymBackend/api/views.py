@@ -26,7 +26,7 @@ def buy_vipcard(request):
         deposit = float(post_content['deposit'])
         dic['status'] = "Success"
         customer = Customer.objects.get(id=customer_id)
-        customer.membership = "0"
+        customer.membership = "1"
 
         user = Vipcard.objects.get(customerid=customer)
     except (KeyError, json.decoder.JSONDecodeError):
@@ -119,6 +119,13 @@ def get_all_customer(request):
         dic = {}
         dic['id'] = coach.id
         dic['customer_name'] = coach.customername
+        print(coach.membership)
+        if int(coach.membership)==1:
+            print("ee")
+            vip = Vipcard.objects.get(customerid=coach)
+            dic['deposit'] = vip.deposit
+        else:
+            dic['deposit']=0
 
         arr.append(dic)
 
@@ -458,7 +465,8 @@ def create_maintaince(request):
         equipid = post_content['equip_id']
 
         equipment = Equipment.objects.get(id=equipid)
-        equipment.lastfix = str(datetime.datetime.now())
+        equipment.lastfix=str(datetime.date.today())
+        equipment.save()
         technician = Technician.objects.get(id=technician_id)
         maintaince_history = Maintenance(equipid=equipment, repairman=technician, note="")
         maintaince_history.save()
@@ -647,16 +655,69 @@ def deposit(request):
         vip=Vipcard.objects.get(customerid=stduent)
         vip.deposit+=float(deposit)
         vip.save()
+        stduent.membership = '1'
         dic['status'] = "Success"
         dic['message'] = "deposit sucesss"
         return HttpResponse(json.dumps(dic))
     except Vipcard.DoesNotExist:
         return buy_vipcard(request)
-
-
-
-
     except Student.DoesNotExist:
         dic['status'] = "Failed"
         dic['message'] = "The technician doesn't exist"
         return HttpResponse(json.dumps(dic))
+
+@csrf_exempt
+def get_maintaince_count(request):
+    array =[]
+    i=1
+    count=0
+    for ee in Maintenance.objects.all():
+        if i==1:
+            temp=ee.fixday
+            i+=1
+            count+=1
+            print("wordo")
+        if ee.fixday==temp:
+            count+=1
+            print("ee")
+        else:
+            dic = {'Maintainence count': count, 'time': str(temp)}
+            array.append(dic)
+            count=1
+            print("gale")
+            temp=ee.fixday
+    if count>1:
+        dic = {'Maintainence count': count, 'time': str(temp)}
+        array.append(dic)
+    dict={}
+    dict['status'] = "Success"
+    dict['maintainence_list'] = array
+    return HttpResponse(json.dumps(dict))
+
+
+@csrf_exempt
+def get_register_count(request):
+    array =[]
+    i=1
+    dic={}
+    count=0
+    for ee in Customer.objects.all():
+        if i==1:
+            temp=ee.registertime
+            i+=1
+            count+=1
+        if ee.registertime==temp:
+            count+=1
+        else:
+            dic={'Register count':count,'time':str(temp)}
+            array.append(dic)
+            count=1
+            temp=ee.registertime
+
+    if count>1:
+        dic = {'Register count': count, 'time': str(temp)}
+        array.append(dic)
+    dict = {}
+    dict['status'] = "Success"
+    dict['register_list'] = array
+    return HttpResponse(json.dumps(dict))

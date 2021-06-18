@@ -26,5 +26,7 @@ urlpatterns = [
     path('customer_class', views.customer_class),
     path('student_get_class',views.student_get_class),
     path('get_deposit/<int:user_id>', views.get_deposit),
+    path('register_count', views.get_register_count),
+    path('maintainence_count', views.get_maintaince_count),
 
 ]
