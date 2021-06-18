@@ -37,7 +37,7 @@ class Vipcard(models.Model):
     registertime = models.DateField(db_column='registerTime', blank=True, null=True,
                                     default=now)  # Field name made lowercase.
     customerid = models.ForeignKey('Customer', models.DO_NOTHING, db_column='customerID', blank=True, null=True)  # Field name made lowercase.
-    expiry = models.DateField(blank=True, null=True)
+    expiry = models.DateField(blank=True, null=True,default=now())
     times = models.IntegerField(blank=True, null=True)
     deposit = models.FloatField(blank=True, null=True)
 
@@ -160,7 +160,7 @@ class Manager(models.Model):
 
 class Student(models.Model):
     id = models.BigAutoField(db_column='ID', primary_key=True)  # Field name made lowercase.
-    contactnum = models.BigIntegerField(db_column='contactNum', blank=True, null=True)  # Field name made lowercase.
+    contactnum = models.BigIntegerField(db_column='contactNum', blank=True, null=True)  # customer id
     classid = models.ForeignKey(Class, models.DO_NOTHING, db_column='classID')  # Field name made lowercase.
     classtime = models.CharField(db_column='classTime', max_length=10, blank=True,
                                  null=True,default='0')  # Field name made lowercase.
