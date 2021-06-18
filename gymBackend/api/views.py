@@ -75,35 +75,48 @@ def buy_class(request):
         customer_id = int(post_content['customer_id'])
         customers = Customer.objects.get(id=customer_id)
         classes = Class.objects.get(id=classid)
+        i = 0
+        students = Student.objects.all()
 
+        for student in students:
+            print(student.contactnum)
+            print(classid)
+            if int(student.contactnum) == customer_id:
+                if int(classid) == int(student.classid.id):
+                    dic['status'] = "Failed"
+                    dic['message'] = "Class exists"
+                    return HttpResponse(json.dumps(dic))
         for vip in Vipcard.objects.all():
             if vip.customerid == customers:
-                if vip.deposit-float(classes.fee)<0:
+                if vip.deposit - float(classes.fee) < 0:
 
                     dic['status'] = "Failed"
                     dic['message'] = "Your money isn't enough."
                     dic['deposit'] = vip.deposit
-                else:
-                    vip.deposit -= classes.fee
+                    return HttpResponse(json.dumps(dic))
 
-                return HttpResponse(json.dumps(dic))
-        dic['status'] = "Success"
-        students = Student.objects.filter(classid=classes)
-        for student in students:
-            if student.contactnum == classid:
-                dic['status'] = "Failed"
-                dic['message'] = "Class exists"
-                return HttpResponse(json.dumps(dic))
+                else:
+                    i += 1
+                    vip.deposit -= float(classes.fee)
+                    vip.save()
+                    break
+
+        if i == 0:
+            dic['status'] = "Failed"
+            dic['message'] = "Please deposit first."
+            dic['deposit'] = vip.deposit
+            return HttpResponse(json.dumps(dic))
         name = classes.coach
         coach = Coach.objects.get(coachname=name)
-
         custom = Student(classid=classes, coach=coach, contactnum=customer_id)
         custom.save()
+        dic['status'] = "Success"
         return HttpResponse(json.dumps(dic))
     except (KeyError, json.decoder.JSONDecodeError):
         dic['status'] = "Failed"
         dic['message'] = "No Input"
         return HttpResponse(json.dumps(dic))
+
 
 @csrf_exempt
 def get_all_customer(request):
@@ -120,12 +133,12 @@ def get_all_customer(request):
         dic['id'] = coach.id
         dic['customer_name'] = coach.customername
         print(coach.membership)
-        if int(coach.membership)==1:
+        if int(coach.membership) == 1:
             print("ee")
             vip = Vipcard.objects.get(customerid=coach)
             dic['deposit'] = vip.deposit
         else:
-            dic['deposit']=0
+            dic['deposit'] = 0
 
         arr.append(dic)
 
@@ -133,7 +146,6 @@ def get_all_customer(request):
     dict['status'] = "Success"
     dict['customer_list'] = arr
     return HttpResponse(json.dumps(dict))
-
 
 
 @csrf_exempt
@@ -185,7 +197,6 @@ def get_all_student(request):
     dict['status'] = "Success"
     dict['coach_list'] = arr
     return HttpResponse(json.dumps(dict))
-
 
 
 @csrf_exempt
@@ -406,7 +417,7 @@ def show_all_equipment(request):
         dic = {}
         dic["equipment_id"] = ee.id
         dic["equipname"] = ee.equipname
-        dic["equipdata"] = str(bytes(ee.equipdata),encoding='utf-8')
+        dic["equipdata"] = str(bytes(ee.equipdata), encoding='utf-8')
         print(ee.equipdata)
         dic["price"] = float(ee.price)
         dic["last_fix"] = ee.lastfix
@@ -434,7 +445,7 @@ def create_Equipment(request):
         price = float(post_content['price'])
 
         equipment = Equipment.objects.get(equipname=username)
-        equipment.lastfix=str(datetime.date.today())
+        equipment.lastfix = str(datetime.date.today())
     except (KeyError, json.decoder.JSONDecodeError):
         dic['status'] = "Failed"
         dic['message'] = "No Input"
@@ -442,7 +453,7 @@ def create_Equipment(request):
     except Equipment.DoesNotExist:
         dic['status'] = "Success"
         now = datetime.datetime.now()
-        custom = Equipment(equipname=username, equipdata=bytes(equipdata,'utf-8'), price=price,
+        custom = Equipment(equipname=username, equipdata=bytes(equipdata, 'utf-8'), price=price,
                            lastfix=datetime.date.today())
         custom.save()
         return HttpResponse(json.dumps(dic))
@@ -465,7 +476,7 @@ def create_maintaince(request):
         equipid = post_content['equip_id']
 
         equipment = Equipment.objects.get(id=equipid)
-        equipment.lastfix=str(datetime.date.today())
+        equipment.lastfix = str(datetime.date.today())
         equipment.save()
         technician = Technician.objects.get(id=technician_id)
         maintaince_history = Maintenance(equipid=equipment, repairman=technician, note="")
@@ -607,9 +618,8 @@ def student_get_class(request):
         return HttpResponse(json.dumps(dic))
 
 
-
 @csrf_exempt
-def get_deposit(request,user_id):
+def get_deposit(request, user_id):
     dic = {}
     if request.method != 'GET':
         dic['status'] = "Failed"
@@ -620,7 +630,7 @@ def get_deposit(request,user_id):
         customer = Customer.objects.get(id=user_id)
 
         for vip in Vipcard.objects.all():
-            if vip.customerid==customer:
+            if vip.customerid == customer:
                 dic['status'] = "Success"
                 dic['message'] = "OK."
                 dic['deposit'] = vip.deposit
@@ -639,6 +649,7 @@ def get_deposit(request,user_id):
     dic['message'] = "OK."
     return HttpResponse(json.dumps(dic))
 
+
 @csrf_exempt
 def deposit(request):
     dic = {}
@@ -652,8 +663,8 @@ def deposit(request):
         deposit = post_content['deposit']
 
         stduent = Customer.objects.get(id=student_id)
-        vip=Vipcard.objects.get(customerid=stduent)
-        vip.deposit+=float(deposit)
+        vip = Vipcard.objects.get(customerid=stduent)
+        vip.deposit += float(deposit)
         vip.save()
         stduent.membership = '1'
         dic['status'] = "Success"
@@ -666,30 +677,31 @@ def deposit(request):
         dic['message'] = "The technician doesn't exist"
         return HttpResponse(json.dumps(dic))
 
+
 @csrf_exempt
 def get_maintaince_count(request):
-    array =[]
-    i=1
-    count=0
+    array = []
+    i = 1
+    count = 0
     for ee in Maintenance.objects.all():
-        if i==1:
-            temp=ee.fixday
-            i+=1
-            count+=1
+        if i == 1:
+            temp = ee.fixday
+            i += 1
+            count += 1
             print("wordo")
-        if ee.fixday==temp:
-            count+=1
+        if ee.fixday == temp:
+            count += 1
             print("ee")
         else:
             dic = {'Maintainence count': count, 'time': str(temp)}
             array.append(dic)
-            count=1
+            count = 1
             print("gale")
-            temp=ee.fixday
-    if count>1:
+            temp = ee.fixday
+    if count > 1:
         dic = {'Maintainence count': count, 'time': str(temp)}
         array.append(dic)
-    dict={}
+    dict = {}
     dict['status'] = "Success"
     dict['maintainence_list'] = array
     return HttpResponse(json.dumps(dict))
@@ -697,24 +709,24 @@ def get_maintaince_count(request):
 
 @csrf_exempt
 def get_register_count(request):
-    array =[]
-    i=1
-    dic={}
-    count=0
+    array = []
+    i = 1
+    dic = {}
+    count = 0
     for ee in Customer.objects.all():
-        if i==1:
-            temp=ee.registertime
-            i+=1
-            count+=1
-        if ee.registertime==temp:
-            count+=1
+        if i == 1:
+            temp = ee.registertime
+            i += 1
+            count += 1
+        if ee.registertime == temp:
+            count += 1
         else:
-            dic={'Register count':count,'time':str(temp)}
+            dic = {'Register count': count, 'time': str(temp)}
             array.append(dic)
-            count=1
-            temp=ee.registertime
+            count = 1
+            temp = ee.registertime
 
-    if count>1:
+    if count > 1:
         dic = {'Register count': count, 'time': str(temp)}
         array.append(dic)
     dict = {}
